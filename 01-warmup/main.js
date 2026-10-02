@@ -7,35 +7,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   const svgWidth = document.querySelector("#wine-svg").clientWidth;
   const svgHeight = document.querySelector("#wine-svg").clientHeight;
 
-  const POINT_RADIUS = 2;
-  const NUM_POINT_VALS = d3.group(wineData, d => d.points).size;
-  const COL_WIDTH = svgWidth / NUM_POINT_VALS - 8;
-
   // size svg
   const svg = d3.select("#wine-svg")
     .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
 
   // scaling
-  const fillScale = d3.scaleSequentialLog()
+  const rScale = d3.scaleLinear()
+    .domain(d3.extent(wineData, d => d.price))
+    .range([10, svgHeight / 2]);
+
+  const strokeScale = d3.scaleSequentialLog()
     .domain(d3.extent(wineData, d => d.price))
     .interpolator(d3.interpolateHsl("orange", "purple"));
 
   const cxScale = d3.scaleLinear()
     .domain(d3.extent(wineData, d => d.points))
-    .range([POINT_RADIUS, svgWidth - POINT_RADIUS]);
-
-  const cyScale = d3.scaleLog()
-    .domain(d3.extent(wineData, d => d.price))
-    .range([svgHeight - POINT_RADIUS, POINT_RADIUS]);
+    .range([0, svgWidth]);
 
   // bind and draw data
   svg.append("g")
     .selectAll("circle")
     .data(wineData)
     .join("circle")
-    .attr("cx", (d) => cxScale(d.points) + (COL_WIDTH * (Math.random() - 0.5)))
-    .attr("cy", (d) => cyScale(d.price))
-    .attr("r", 2)
-    .attr("fill", (d) => fillScale(d.price))
+    .attr("cx", (d) => cxScale(d.points))
+    .attr("cy", svgHeight / 2)
+    .attr("r", d => rScale(d.price))
+    .attr("fill", "none")
+    .attr("stroke", d => strokeScale(d.price))
+    .attr("stroke-width", 1)
     .attr("stroke-opacity", 0.3);
 });
